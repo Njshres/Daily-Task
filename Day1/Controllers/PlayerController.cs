@@ -7,20 +7,25 @@ namespace PlayerApi.Controllers
     [Route("api/[controller]")]
     public class PlayerController : ControllerBase
     {
-        private static List<Player> players = new List<Player>();
-        private int nextId = 0;
+       
+        private readonly PlayerService _playerService;
+
+        public PlayerController()
+        {
+            _playerService = new PlayerService();
+        }
 
         [HttpGet]
         public ActionResult<List<Player>> GetAll()
         {
-            return Ok(players);
+            return Ok(_playerService.GetAll());
         }
 
         [HttpGet("{id}")]
 
         public ActionResult<Player> Get(int id)
         {
-            var player = players.FirstOrDefault(p => p.Id == id);
+            var player = _playerService.Get(id);
             if (player == null)
             {
                 return NotFound();
@@ -33,8 +38,7 @@ namespace PlayerApi.Controllers
 
         public ActionResult Add(Player player)
         {
-            player.Id = nextId++;
-            players.Add(player);
+           _playerService.Add(player);
             return CreatedAtAction(nameof(Get), new { id = player.Id }, player);
         }
 
@@ -45,27 +49,25 @@ namespace PlayerApi.Controllers
             {
                 return BadRequest();
             }
-            var player = players.FirstOrDefault(p => p.Id == id);
+            var player = _playerService.Get(id);
             if (player == null)
             {
                 return NotFound();
             }
-            player.Name = editPlayer.Name;
-            player.Age = editPlayer.Age;
-            player.Country = editPlayer.Country;
+            _playerService.Update(player);
 
             return NoContent();
         }
         [HttpDelete("{id}")]
         public ActionResult Delete(int id)
         {
-            var player = players.FirstOrDefault(p => p.Id == id);
+            var player = _playerService.Get(id);
             if (player == null)
             {
                 return NotFound();
             }
 
-            players.Remove(player);
+            _playerService.Delete(id);
             return NoContent();
         }
     
